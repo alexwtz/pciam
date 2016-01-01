@@ -6,7 +6,13 @@ app = Flask(__name__)
 
 # This function maps the angle we want to move the servo to, to the needed PWM value
 def angleMap(angle):
-	return int((round((2000.0/180.0),0)*angle) -1000)
+	value = int((round((2000.0/180.0),0)*angle) -1000)
+	if(value > 1000):
+		return 1000
+	elif(value < -1000):
+		return -1000
+	else:
+		return value;
 
 # Create a dictionary called pins to store the pin number, name, and angle
 pins = {
@@ -16,6 +22,10 @@ pins = {
 
 #defines the speed of the movement
 speed = 5
+
+#define inverse
+paninverse = 1
+tiltinverse = -1
 
 def cleanup():
 	print("Exit app")
@@ -33,6 +43,18 @@ def sendPosition(motor, position):
 	s.close()
 	return "Moved"
 
+def sendBothPosition(positionPan, positionTilt):
+        #Initialise the serial interface
+        s=serial.Serial("/dev/ttyAMA0",9600)
+        if(s.isOpen()):
+                s.close()
+        s.open()
+        s.write("s0 "+str(positionPan)+" 5\n")
+        s.write("s1 "+str(positionTilt)+" 5\n")
+        s.close()
+        return "Moved"
+
+
 # Load the main form template on webrequest for the root page
 @app.route("/")
 def main():
@@ -48,10 +70,12 @@ def main():
 @app.route("/<direction>")
 def move(direction):
     global speed
+    global titlinverse
+    global paninverse
     # Choose the direction of the request
     if direction == 'left':
 	    # Increment the angle by speed
-        na = pins[23]['angle'] + speed
+        na = pins[23]['angle'] + paninverse * speed
         # Verify that the new angle is not too great
         if int(na) <= 180:
             # Change the angle of the servo
@@ -59,27 +83,40 @@ def move(direction):
 	    print("Servo 23 at %s" % (angleMap(na)))
             # Store the new angle in the pins dictionary
             pins[23]['angle'] = na
+	else:
+	    pins[23]['angle'] = 180
         return str(na) + ' ' + str(angleMap(na))
+    elif direction == 'reset':
+	sendBothPosition(0,0)
+	pins[23]['angle'] = 90
+	pins[22]['angle'] = 90
+	return '0 0'	
     elif direction == 'right':
-        na = pins[23]['angle'] - speed
+        na = pins[23]['angle'] - paninverse *speed
         if na >= 0:
 	    sendPosition(pins[23]['name'],angleMap(na))
 	    print("Servo 23 at %s" % (angleMap(na)))
             pins[23]['angle'] = na
+	else :
+	    pins[23]['angle'] = 0
         return str(na) + ' ' + str(angleMap(na))
     elif direction == 'up':
-        na = pins[22]['angle'] + speed
+        na = pins[22]['angle'] + tiltinverse * speed
         if na <= 180:
             sendPosition(pins[22]['name'],angleMap(na))
 	    print("Servo 22 at %s" % (angleMap(na)))
             pins[22]['angle'] = na
+	else :
+	    pins[22]['angle'] = 180
         return str(na) + ' ' + str(angleMap(na))
     elif direction == 'down':
-        na = pins[22]['angle'] - speed
+        na = pins[22]['angle'] - tiltinverse * speed
         if na >= 0:
             sendPosition(pins[22]['name'],angleMap(na))
             print("Servo 22 at %s" % (angleMap(na)))
             pins[22]['angle'] = na
+	else :
+	    pins[22]['angle'] = 0
         return str(na) + ' ' + str(angleMap(na))
     elif direction == 'speed1':
 	speed = 1
