@@ -1,4 +1,4 @@
-from RPIO import PWM 
+import serial
 import time
 import atexit
 from flask import Flask, render_template, request
@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # This function maps the angle we want to move the servo to, to the needed PWM value
 def angleMap(angle):
-	return int((round((1950.0/180.0),0)*angle) +550)
+	return int((round((2000.0/180.0),0)*angle) -1000)
 
 # Create a dictionary called pins to store the pin number, name, and angle
 pins = {
@@ -14,18 +14,24 @@ pins = {
     22 : {'name' : 'tilt', 'angle' : 90}
     }
 
-# Create two servo objects using the RPIO PWM library
-servoPan = PWM.Servo()
-servoTilt = PWM.Servo()
+#defines the speed of the movement
+speed = 5
 
-# Setup the two servos and turn both to 90 degrees
-servoPan.set_servo(23, angleMap(90))
-servoPan.set_servo(22, angleMap(90))
-
-# Cleanup any open objects
 def cleanup():
-    servo.stop_servo(23)
-    servo.stop_servo(22)
+	print("Exit app")
+
+def sendPosition(motor, position):
+	#Initialise the serial interface
+	s=serial.Serial("/dev/ttyAMA0",9600)
+	if(s.isOpen()):
+     		s.close()
+	s.open()
+	if motor == "pan":
+		s.write("s0 "+str(position)+" 5\n")
+	elif motor == "tilt":
+     		s.write("s1 "+str(position)+" 5\n")
+	s.close()
+	return "Moved"
 
 # Load the main form template on webrequest for the root page
 @app.route("/")
@@ -41,35 +47,52 @@ def main():
 # The function below is executed when someone requests a URL with a move direction
 @app.route("/<direction>")
 def move(direction):
+    global speed
     # Choose the direction of the request
     if direction == 'left':
-	    # Increment the angle by 10 degrees
-        na = pins[23]['angle'] + 10
+	    # Increment the angle by speed
+        na = pins[23]['angle'] + speed
         # Verify that the new angle is not too great
         if int(na) <= 180:
             # Change the angle of the servo
-            servoPan.set_servo(23, angleMap(na))
+            sendPosition(pins[23]['name'],angleMap(na))
+	    print("Servo 23 at %s" % (angleMap(na)))
             # Store the new angle in the pins dictionary
             pins[23]['angle'] = na
         return str(na) + ' ' + str(angleMap(na))
     elif direction == 'right':
-        na = pins[23]['angle'] - 10
+        na = pins[23]['angle'] - speed
         if na >= 0:
-            servoPan.set_servo(23, angleMap(na))
+	    sendPosition(pins[23]['name'],angleMap(na))
+	    print("Servo 23 at %s" % (angleMap(na)))
             pins[23]['angle'] = na
         return str(na) + ' ' + str(angleMap(na))
     elif direction == 'up':
-        na = pins[22]['angle'] + 10
+        na = pins[22]['angle'] + speed
         if na <= 180:
-            servoTilt.set_servo(22, angleMap(na))
+            sendPosition(pins[22]['name'],angleMap(na))
+	    print("Servo 22 at %s" % (angleMap(na)))
             pins[22]['angle'] = na
         return str(na) + ' ' + str(angleMap(na))
     elif direction == 'down':
-        na = pins[22]['angle'] - 10
+        na = pins[22]['angle'] - speed
         if na >= 0:
-            servoTilt.set_servo(22, angleMap(na))
+            sendPosition(pins[22]['name'],angleMap(na))
+            print("Servo 22 at %s" % (angleMap(na)))
             pins[22]['angle'] = na
         return str(na) + ' ' + str(angleMap(na))
+    elif direction == 'speed1':
+	speed = 1
+	return str(speed)
+    elif direction == 'speed5':
+	speed = 5
+        return str(speed)
+    elif direction == 'speed10':
+	speed = 10
+        return str(speed)
+    elif direction == 'speed20':
+	speed = 20
+        return str(speed)
 
 # Function to manually set a motor to a specific pluse width
 @app.route("/<motor>/<pulsewidth>")
