@@ -1,0 +1,3 @@
+Copy thoses files into /etc/init.d/
+And execute the command replacing XXXXX with the service name
+sudo update-rc.d /etc/init.d/XXXXX defaults

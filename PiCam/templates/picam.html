@@ -22,49 +22,62 @@
         <table align="center" class="style1">
             <tr>
                 <td colspan="2" style="text-align: center">
-					<img src="http://picam:8080/?action=stream"/>
+					<img data-rotate="180" src="http://bilouland.synology.me:9998/?action=stream" />
                 </td>
             </tr>
             <tr>
                 <td colspan="2" style="text-align: center">
-                    <input id="btnUp" type="button" value="Up" onclick="Button_onclick('up')" />
+                    <input id="btnUp" type="button" value="Up" onclick="Button_onclick('up')" style="width:150px;height:50px;font-size:30px"/>
                 </td>
             </tr>
             <tr>
                 <td style="text-align: center">
-                    <input id="btnLeft" type="button" value="Left" onclick="Button_onclick('left')" />
+                    <input id="btnLeft" type="button" value="Left" onclick="Button_onclick('left')" style="width:150px;height:50px;font-size:30px"/>
                 </td>
                 <td style="text-align: center">
-                    <input id="btnRight" type="button" value="Right" onclick="Button_onclick('right')" />
+                    <input id="btnRight" type="button" value="Right" onclick="Button_onclick('right')" style="width:150px;height:50px;font-size:30px"/>
                 </td>
             </tr>
             <tr>
                 <td colspan="2" style="text-align: center">
-                    <input id="btnDown" type="button" value="Down" onclick="Button_onclick('down')" />
+                    <input id="btnDown" type="button" value="Down" onclick="Button_onclick('down')" style="width:150px;height:50px;font-size:30px"/>
                 </td>
             </tr>
 <tr>
                 <td colspan="2" style="text-align: center">
-                    <input id="btnDown" type="button" value="Reset" onclick="Button_onclick('reset')" />
+                    <input id="btnDown" type="button" value="Reset" onclick="Button_onclick('reset')" style="width:150px;height:50px;font-size:30px"/>
                 </td>
             </tr>
 
 	               <tr>
                 <td style="text-align: center">
-                    <input id="btnLeft" type="button" value="1" onclick="Button_onclick('speed1')" />
+                    <input id="btnLeft" type="button" value="1" onclick="Button_onclick('speed1')" style="width:150px;height:50px;font-size:30px"/>
                 </td>
                 <td style="text-align: center">
-                    <input id="btnRight" type="button" value="5" onclick="Button_onclick('speed5')" />
+                    <input id="btnRight" type="button" value="5" onclick="Button_onclick('speed5')" style="width:150px;height:50px;font-size:30px"/>
                 </td>
             </tr>
            <tr>
                 <td style="text-align: center">
-                    <input id="btnLeft" type="button" value="10" onclick="Button_onclick('speed10')" />
+                    <input id="btnLeft" type="button" value="10" onclick="Button_onclick('speed10')" style="width:150px;height:50px;font-size:30px"/>
                 </td>
                 <td style="text-align: center">
-                    <input id="btnRight" type="button" value="20" onclick="Button_onclick('speed20')" />
+                    <input id="btnRight" type="button" value="20" onclick="Button_onclick('speed20')" style="width:150px;height:50px;font-size:30px"/>
                 </td>
             </tr>
         </table>
     </body>
+    <script type="text/javascript">
+	$('img').each(function() {
+    var deg = $(this).data('rotate') || 0;
+    var rotate = 'rotate(' + $(this).data('rotate') + 'deg)';
+    $(this).css({ 
+        '-webkit-transform': rotate,
+        '-moz-transform': rotate,
+        '-o-transform': rotate,
+        '-ms-transform': rotate,
+        'transform': rotate 
+    });
+});
+    </script>
 </html>
